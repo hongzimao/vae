@@ -63,7 +63,7 @@ class VariationalAutoencoder(object):
     def create_decoder_network(self):
         hid_1 = tl.fully_connected(self.hidden_sample, 32, activation_fn=tf.nn.softplus)
         hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
-        output = tl.fully_connected(hid_2, 1, activation_fn=None)
+        output = tl.fully_connected(hid_2, self.s_dim, activation_fn=None)
         return output
 
     def create_loss_optimizer(self):
