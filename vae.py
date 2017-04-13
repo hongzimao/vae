@@ -19,7 +19,7 @@ class VariationalAutoencoder(object):
         self.learning_rate = learning_rate
         self.batch_size = batch_size
 
-        self.input = tf.placeholder(tf.float32, [None, self.s_dim])
+        self.inputs = tf.placeholder(tf.float32, [None, self.s_dim])
         
         # Create autoencoder framework
         self.create_networks()
@@ -56,13 +56,13 @@ class VariationalAutoencoder(object):
 
     def create_decoder_network(self):
         hid_1 = tl.fully_connected(self.hidden_sample, 32, activation_fn=tf.nn.softplus)
-        hid_2 = tf.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
+        hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_2, 1, activation_fn=None)
         return output
 
     def create_loss_optimizer(self):
         reconstruct_loss = tf.reduce_mean(
-            tf.square(self.input - self.dec_mean), 1)
+            tf.square(self.inputs - self.dec_mean), 1)
 
         vae_loss = -0.5 * tf.reduce_mean(
             1 + self.enc_log_sigma_sq -
@@ -92,8 +92,7 @@ class VariationalAutoencoder(object):
         space.        
         """
         if hidden_sample is None:
-            hidden_sample = np.random.normal(
-            	size=[1, self.hidden_dim])
+            hidden_sample = np.random.normal(size=[1, self.hidden_dim])
         # Note: This maps to mean of distribution, we could alternatively
         # sample from Gaussian distribution
         return self.sess.run(self.dec_mean, feed_dict={
