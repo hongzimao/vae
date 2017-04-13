@@ -10,14 +10,12 @@ tf.set_random_seed(42)
 # [2] Auto-Encoding Variational Bayes https://arxiv.org/pdf/1312.6114.pdf
 class VariationalAutoencoder(object):
 
-    def __init__(self, sess, s_dim, hidden_dim=4, 
-                 learning_rate=0.001, batch_size=100):
+    def __init__(self, sess, s_dim, hidden_dim=4, learning_rate=0.001):
 
         self.sess = sess
         self.s_dim = s_dim
         self.hidden_dim = hidden_dim
         self.learning_rate = learning_rate
-        self.batch_size = batch_size
 
         self.inputs = tf.placeholder(tf.float32, [None, self.s_dim])
         self.hidden_sample = tf.placeholder(tf.float32, [None, self.hidden_dim])
@@ -43,7 +41,7 @@ class VariationalAutoencoder(object):
 
         # Draw a sample from Gaussian distribution
         eps = tf.random_normal(
-            (self.batch_size, self.hidden_dim), 0, 1, 
+            (tf.shape(enc_mean)[0], self.hidden_dim), 0, 1,
             dtype=tf.float32)
 
         # Reparametrization trick
@@ -90,21 +88,15 @@ class VariationalAutoencoder(object):
         return loss
     
     def encode(self, inputs):
-        return self.sess.run(self.enc_mean, feed_dict={
-            self.inputs: inputs
-        })
+        return self.sess.run((self.enc_mean, self.enc_log_sigma_sq),
+                             feed_dict={self.inputs: inputs})
     
     def generate(self, hidden_sample=None):
-        """ Generate data by sampling from latent space.
-        
-        If z_mu is not None, data for this point in latent space is
-        generated. Otherwise, z_mu is drawn from prior in latent 
-        space.        
-        """
+        # If hidden_sample is not None, data for this point in latent
+        # space is generated. Otherwise, hidden_sample is drawn from
+        # prior in latent space.
         if hidden_sample is None:
             hidden_sample = np.random.normal(size=[1, self.hidden_dim])
-        # Note: This maps to mean of distribution, we could alternatively
-        # sample from Gaussian distribution
         return self.sess.run(self.dec_mean, feed_dict={
             self.hidden_sample: hidden_sample
         })
@@ -113,3 +105,4 @@ class VariationalAutoencoder(object):
         return self.sess.run(self.dec_mean, feed_dict={
             self.inputs: inputs
         })
+    
