@@ -48,7 +48,6 @@ class VariationalAutoencoder(object):
         # Reconstruct the data
         self.dec_mean = self.create_decoder_network()
 
-
     def create_encoder_network(self):
         hid_1 = tl.fully_connected(self.inputs, 32, activation_fn=tf.nn.softplus)
         hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
@@ -75,7 +74,6 @@ class VariationalAutoencoder(object):
         self.opt = \
         	tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
 
-        
     def train(self, inputs):
         opt, loss = self.sess.run((self.opt, self.loss), 
                                   feed_dict={self.inputs: inputs})
@@ -106,4 +104,3 @@ class VariationalAutoencoder(object):
         return self.sess.run(self.dec_mean, feed_dict={
         	self.inputs: inputs
         })
-
