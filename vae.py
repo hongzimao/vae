@@ -75,7 +75,7 @@ class VariationalAutoencoder(object):
             tf.square(self.enc_mean) - 
             tf.exp(self.enc_log_sigma_sq), 1)
 
-        loss = tf.reduced_mean(reconstruct_loss + vae_loss)
+        loss = tf.reduce_mean(reconstruct_loss + vae_loss)
 
         opt = tf.train.AdamOptimizer(
             learning_rate=self.learning_rate).minimize(loss)
