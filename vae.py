@@ -58,7 +58,7 @@ class VariationalAutoencoder(object):
         hid_1 = tl.fully_connected(self.inputs, 32, activation_fn=tf.nn.softplus)
         hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_2, self.hidden_dim * 2, activation_fn=None)
-        return output[:, self.hidden_dim:], output[:, -self.hidden_dim:]
+        return output[:, :self.hidden_dim], output[:, -self.hidden_dim:]
 
     def create_decoder_network(self):
         hid_1 = tl.fully_connected(self.hidden_sample, 32, activation_fn=tf.nn.softplus)
