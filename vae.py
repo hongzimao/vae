@@ -10,7 +10,7 @@ tf.set_random_seed(42)
 # [2] Auto-Encoding Variational Bayes https://arxiv.org/pdf/1312.6114.pdf
 class VariationalAutoencoder(object):
 
-    def __init__(self, sess, s_dim, hidden_dim=4, learning_rate=0.001):
+    def __init__(self, sess, s_dim, hidden_dim, learning_rate=0.001):
 
         self.sess = sess
         self.s_dim = s_dim
@@ -55,14 +55,14 @@ class VariationalAutoencoder(object):
         return enc_mean, enc_log_sigma_sq, dec_mean
 
     def create_encoder_network(self):
-        hid_1 = tl.fully_connected(self.inputs, 32, activation_fn=tf.nn.softplus)
-        hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
+        hid_1 = tl.fully_connected(self.inputs, 64, activation_fn=tf.nn.softplus)
+        hid_2 = tl.fully_connected(hid_1, 32, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_2, self.hidden_dim * 2, activation_fn=None)
         return output[:, :self.hidden_dim], output[:, -self.hidden_dim:]
 
     def create_decoder_network(self):
-        hid_1 = tl.fully_connected(self.hidden_sample, 32, activation_fn=tf.nn.softplus)
-        hid_2 = tl.fully_connected(hid_1, 16, activation_fn=tf.nn.softplus)
+        hid_1 = tl.fully_connected(self.hidden_sample, 64, activation_fn=tf.nn.softplus)
+        hid_2 = tl.fully_connected(hid_1, 32, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_2, self.s_dim, activation_fn=None)
         return output
 
@@ -77,7 +77,7 @@ class VariationalAutoencoder(object):
 
         loss = tf.reduce_mean(reconstruct_loss + vae_loss)
 
-        opt = tf.train.AdamOptimizer(
+        opt = tf.train.RMSPropOptimizer(
             learning_rate=self.learning_rate).minimize(loss)
 
         return loss, opt
@@ -96,7 +96,7 @@ class VariationalAutoencoder(object):
         # space is generated. Otherwise, hidden_sample is drawn from
         # prior in latent space.
         if hidden_sample is None:
-            hidden_sample = np.random.normal(size=[1, self.hidden_dim])
+            hidden_sample = np.random.normal(0, 1, size=[1, self.hidden_dim])
         return self.sess.run(self.dec_mean, feed_dict={
             self.hidden_sample: hidden_sample
         })
