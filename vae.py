@@ -71,8 +71,8 @@ class VariationalAutoencoder(object):
 
         self.loss = reconstruct_loss + vae_loss
 
-        self.opt = \
-        	tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(self.loss)
+        self.opt = tf.train.AdamOptimizer(
+            learning_rate=self.learning_rate).minimize(self.loss)
 
     def train(self, inputs):
         opt, loss = self.sess.run((self.opt, self.loss), 
@@ -81,7 +81,7 @@ class VariationalAutoencoder(object):
     
     def encode(self, inputs):
         return self.sess.run(self.enc_mean, feed_dict={
-        	self.inputs: inputs
+            self.inputs: inputs
         })
     
     def generate(self, hidden_sample=None):
@@ -92,15 +92,15 @@ class VariationalAutoencoder(object):
         space.        
         """
         if hidden_sample is None:
-            hidden_sample = \
-            	np.random.normal(size=[1, self.hidden_dim])
+            hidden_sample = np.random.normal(
+            	size=[1, self.hidden_dim])
         # Note: This maps to mean of distribution, we could alternatively
         # sample from Gaussian distribution
         return self.sess.run(self.dec_mean, feed_dict={
-        	self.hidden_sample: hidden_sample
+            self.hidden_sample: hidden_sample
         })
     
     def reconstruct(self, inputs):
         return self.sess.run(self.dec_mean, feed_dict={
-        	self.inputs: inputs
+            self.inputs: inputs
         })
