@@ -20,33 +20,41 @@ class VariationalAutoencoder(object):
         self.batch_size = batch_size
 
         self.inputs = tf.placeholder(tf.float32, [None, self.s_dim])
+        self.hidden_sample = tf.placeholder(tf.float32, [None, self.hidden_dim])
         
         # Create autoencoder framework
-        self.create_networks()
+        self.enc_mean, self.enc_log_sigma_sq, self.dec_mean = \
+            self.create_networks()
         
         # Define loss function vae cost and reconstruction cost
-        self.create_loss_optimizer()
+        self.loss, self.opt = \
+            self.create_loss_optimizer()
+
+        # Initialize network parameters
+        # By default, xavier initializer is invoked
+        self.sess.run(tf.global_variables_initializer())
      
     def create_networks(self):
         
         # Encode mean and variance (log sigma square)
         # in latent space
-        self.enc_mean, self.enc_log_sigma_sq = \
+        enc_mean, enc_log_sigma_sq = \
             self.create_encoder_network()
 
         # Draw a sample from Gaussian distribution
-        self.eps = tf.random_normal(
+        eps = tf.random_normal(
             (self.batch_size, self.hidden_dim), 0, 1, 
             dtype=tf.float32)
 
         # Reparametrization trick
         # z = mu + sigma * epsilon
         self.hidden_sample = tf.add(
-            self.enc_mean, 
-            tf.multiply(tf.sqrt(tf.exp(self.enc_log_sigma_sq)), self.eps))
+            enc_mean, tf.multiply(tf.sqrt(tf.exp(enc_log_sigma_sq)), eps))
 
         # Reconstruct the data
-        self.dec_mean = self.create_decoder_network()
+        dec_mean = self.create_decoder_network()
+
+        return enc_mean, enc_log_sigma_sq, dec_mean
 
     def create_encoder_network(self):
         hid_1 = tl.fully_connected(self.inputs, 32, activation_fn=tf.nn.softplus)
@@ -69,10 +77,12 @@ class VariationalAutoencoder(object):
             tf.square(self.enc_mean) - 
             tf.exp(self.enc_log_sigma_sq), 1)
 
-        self.loss = reconstruct_loss + vae_loss
+        loss = reconstruct_loss + vae_loss
 
-        self.opt = tf.train.AdamOptimizer(
-            learning_rate=self.learning_rate).minimize(self.loss)
+        opt = tf.train.AdamOptimizer(
+            learning_rate=self.learning_rate).minimize(loss)
+
+        return loss, opt
 
     def train(self, inputs):
         opt, loss = self.sess.run((self.opt, self.loss), 
