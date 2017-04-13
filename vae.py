@@ -67,15 +67,15 @@ class VariationalAutoencoder(object):
         return output
 
     def create_loss_optimizer(self):
-        reconstruct_loss = tf.reduce_mean(
+        reconstruct_loss = tf.reduce_sum(
             tf.square(self.inputs - self.dec_mean), 1)
 
-        vae_loss = -0.5 * tf.reduce_mean(
+        vae_loss = -0.5 * tf.reduce_sum(
             1 + self.enc_log_sigma_sq -
             tf.square(self.enc_mean) - 
             tf.exp(self.enc_log_sigma_sq), 1)
 
-        loss = reconstruct_loss + vae_loss
+        loss = tf.reduced_mean(reconstruct_loss + vae_loss)
 
         opt = tf.train.AdamOptimizer(
             learning_rate=self.learning_rate).minimize(loss)
@@ -105,4 +105,3 @@ class VariationalAutoencoder(object):
         return self.sess.run(self.dec_mean, feed_dict={
             self.inputs: inputs
         })
-    
