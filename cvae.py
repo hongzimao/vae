@@ -58,20 +58,20 @@ class ConditionalVariationalAutoencoder(object):
         return enc_mean, enc_log_sigma_sq, dec_mean
 
     def create_encoder_network(self):
-        hid_1 = tl.fully_connected(self.inputs, 64, activation_fn=tf.nn.softplus)
-        hid_2 = tl.fully_connected(self.cond_inputs, 64, activation_fn=tf.nn.softplus)
+        hid_1 = tl.fully_connected(self.inputs, 32, activation_fn=tf.nn.softplus)
+        hid_2 = tl.fully_connected(self.cond_inputs, 32, activation_fn=tf.nn.softplus)
         merge = tf.concat([hid_1, hid_2], axis=1)
-        hid_3 = tl.fully_connected(merge, 64, activation_fn=tf.nn.softplus)
-        hid_4 = tl.fully_connected(merge, 32, activation_fn=tf.nn.softplus)
+        hid_3 = tl.fully_connected(merge, 32, activation_fn=tf.nn.softplus)
+        hid_4 = tl.fully_connected(hid_3, 16, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_4, self.hidden_dim * 2, activation_fn=None)
         return output[:, :self.hidden_dim], output[:, -self.hidden_dim:]
 
     def create_decoder_network(self):
-        hid_1 = tl.fully_connected(self.hidden_sample, 64, activation_fn=tf.nn.softplus)
-        hid_2 = tl.fully_connected(self.cond_inputs, 64, activation_fn=tf.nn.softplus)
+        hid_1 = tl.fully_connected(self.hidden_sample, 32, activation_fn=tf.nn.softplus)
+        hid_2 = tl.fully_connected(self.cond_inputs, 32, activation_fn=tf.nn.softplus)
         merge = tf.concat([hid_1, hid_2], axis=1)
-        hid_3 = tl.fully_connected(merge, 64, activation_fn=tf.nn.softplus)
-        hid_4 = tl.fully_connected(merge, 32, activation_fn=tf.nn.softplus)
+        hid_3 = tl.fully_connected(merge, 32, activation_fn=tf.nn.softplus)
+        hid_4 = tl.fully_connected(hid_3, 16, activation_fn=tf.nn.softplus)
         output = tl.fully_connected(hid_4, self.s_dim, activation_fn=None)
         return output
 
@@ -116,7 +116,7 @@ class ConditionalVariationalAutoencoder(object):
         })
     
     def reconstruct(self, inputs, cond_inputs):
-        return self.sess.run(self.dec_mean, feed_dict={
+        return self.sess.run((self.dec_mean, self.loss), feed_dict={
             self.inputs: inputs,
             self.cond_inputs: cond_inputs
         })
