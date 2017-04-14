@@ -8,7 +8,7 @@ S_DIM = 10
 C_DIM = 10
 HIDDEN_DIM = 10
 BATCH_SIZE = 100
-TRAIN_EPOCHS = 100000
+TRAIN_EPOCHS = 50000
 MODEL = None
 
 def main():
@@ -21,13 +21,19 @@ def main():
         saver = tf.train.Saver()
 
         all_cond_inputs, all_inputs = input_data.read_data()
-        data_idx = range(len(all_inputs))
+        all_idx = range(len(all_inputs))
+        np.random.shuffle(all_idx)
+
+        train_num = int(0.8 * len(all_idx))
+        train_cond_inputs = all_cond_inputs[all_idx[:train_num], :]
+        train_inputs = all_inputs[all_idx[:train_num], :]
+        train_idx = range(len(train_inputs))
 
         for ep in xrange(TRAIN_EPOCHS):
             
-            np.random.shuffle(data_idx)
-            cond_inputs = all_cond_inputs[data_idx[:BATCH_SIZE], :]
-            inputs = all_inputs[data_idx[:BATCH_SIZE], :]
+            np.random.shuffle(train_idx)
+            cond_inputs = train_cond_inputs[train_idx[:BATCH_SIZE], :]
+            inputs = train_inputs[train_idx[:BATCH_SIZE], :]
 
             loss = cond_var_auto_enc.train(inputs, cond_inputs)
             print 'epoch %d loss %0.3f\r' % (ep, loss),
