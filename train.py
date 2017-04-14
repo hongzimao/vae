@@ -8,7 +8,8 @@ S_DIM = 10
 C_DIM = 10
 HIDDEN_DIM = 10
 BATCH_SIZE = 100
-TRAIN_EPOCHS = 50000
+TRAIN_EPOCHS = 100
+MODEL_SAVE_PATH = './results/'
 MODEL = None
 
 def main():
@@ -29,16 +30,33 @@ def main():
         train_inputs = all_inputs[all_idx[:train_num], :]
         train_idx = range(len(train_inputs))
 
+        test_num = int(0.2 * len(all_idx))
+        test_cond_inputs = all_cond_inputs[all_idx[-test_num:], :]
+        test_inputs = all_inputs[all_idx[-test_num:], :]
+
         for ep in xrange(TRAIN_EPOCHS):
             
             np.random.shuffle(train_idx)
-            cond_inputs = train_cond_inputs[train_idx[:BATCH_SIZE], :]
-            inputs = train_inputs[train_idx[:BATCH_SIZE], :]
+            steps = int(len(train_idx) / BATCH_SIZE)
+            train_loss = 0
 
-            loss = cond_var_auto_enc.train(inputs, cond_inputs)
-            print 'epoch %d loss %0.3f\r' % (ep, loss),
+            for i in xrange(steps):
+                cond_inputs = train_cond_inputs[
+                    train_idx[BATCH_SIZE * i : BATCH_SIZE * (i + 1)], :]
+                inputs = train_inputs[
+                    train_idx[BATCH_SIZE * i : BATCH_SIZE * (i + 1)], :]
+                train_loss += cond_var_auto_enc.train(inputs, cond_inputs)
 
-        save_path = saver.save(sess, "./nn_model.ckpt")
+            train_loss /= float(steps)
+
+            _, test_loss = cond_var_auto_enc.reconstruct(
+                test_inputs, test_cond_inputs)
+
+            print 'epoch %d train_loss %0.3f test_loss %0.3f' % \
+                (ep, train_loss, test_loss)
+
+            save_path = saver.save(sess,
+                MODEL_SAVE_PATH + "nn_model_" + str(ep) + ".ckpt")
 
 
 if __name__ == '__main__':
