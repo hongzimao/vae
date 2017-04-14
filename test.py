@@ -1,14 +1,15 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 import vae
 import cvae
 import input_data
 
-S_DIM = 10
-C_DIM = 10
+S_DIM = input_data.FUTURE_LEN
+C_DIM = input_data.PAST_LEN
 HIDDEN_DIM = 10
-MODEL = "./nn_model.ckpt"
+MODEL = "./results/nn_model_98.ckpt"
 
 def main():
 
@@ -28,23 +29,37 @@ def main():
         test_cond_inputs = all_cond_inputs[all_idx[-test_num:], :]
         test_inputs = all_inputs[all_idx[-test_num:], :]
         test_idx = range(len(test_inputs))
-        np.random.shuffle(test_idx)
 
         all_inputs_mean = []
         all_outputs_mean = []
         all_gen_mean = []
 
-        for i in xrange(1000):
+        # plot generating examples
+        plot_ex = 6
+        while True:
+            np.random.shuffle(test_idx)
+            fig = plt.figure(figsize=(14, 6))
 
-            cond_inputs = test_cond_inputs[test_idx[i]:test_idx[i]+1, :]
-            inputs = test_inputs[test_idx[i]:test_idx[i]+1, :]
+            gs = gridspec.GridSpec(plot_ex, plot_ex)
+            for i in xrange(plot_ex):
+                for j in xrange(plot_ex):
+                    idx = i * plot_ex + j
 
-            plt.plot(range(10), cond_inputs[0])
-            for _ in xrange(20):
-                gen = cond_var_auto_enc.generate(cond_inputs)
-                plt.plot(range(10, 20), gen[0], 'r', alpha=0.5)
-            plt.plot(range(10, 20), inputs[0], 'b')
-            plt.title(test_idx[i])
+                    cond_inputs = test_cond_inputs[
+                        test_idx[idx]:test_idx[idx]+1, :]
+                    inputs = test_inputs[
+                        test_idx[idx]:test_idx[idx]+1, :]
+
+                    ax = plt.subplot(gs[i:i+1, j:j+1])
+                    ax.plot(range(C_DIM), cond_inputs[0], 'b')
+
+                    for _ in xrange(20):
+                        gen = cond_var_auto_enc.generate(cond_inputs)
+                        ax.plot(range(C_DIM, C_DIM + S_DIM), gen[0],
+                            'r', alpha=0.5)
+
+                    ax.plot(range(C_DIM, C_DIM + S_DIM), inputs[0], 'b')
+
             plt.show()
 
 
