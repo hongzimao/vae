@@ -4,8 +4,8 @@ import vae
 import cvae
 import input_data
 
-S_DIM = 10
-C_DIM = 10
+S_DIM = input_data.FUTURE_LEN
+C_DIM = input_data.PAST_LEN
 HIDDEN_DIM = 10
 BATCH_SIZE = 100
 TRAIN_EPOCHS = 100
