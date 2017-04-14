@@ -28,8 +28,8 @@ def read_data():
                 bw_pt[-1] = bw
 
                 if time_pt[PAST_LEN] != 0:
-                    x.append(bw_pt[:PAST_LEN])
-                    y.append(bw_pt[-FUTURE_LEN:])
+                    x.append(np.array(bw_pt[:PAST_LEN], copy=True))
+                    y.append(np.array(bw_pt[-FUTURE_LEN:], copy=True))
 
                 # record the time as well
                 # if time_pt[PAST_LEN] != 0:
